@@ -71,8 +71,7 @@ namespace EmployeeManagementCsharp
                 FileHandler saveTask = new FileHandler(filePath, employees, true);
                 Thread saveThread = new Thread(new ThreadStart(saveTask.Run));
                 saveThread.Start();
-
-                Thread.Sleep(100);
+                saveThread.Join();
 
                 // Load in another background thread
                 FileHandler loadTask = new FileHandler(filePath, employees, false);
