@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
+using InvalidDataException = EmployeeManagementCsharp.exceptions.InvalidDataException;
 
 namespace EmployeeManagementCsharp.io
 {
@@ -73,29 +74,69 @@ namespace EmployeeManagementCsharp.io
                             throw new InvalidDataException("Unknown employee type: " + type);
                     }
 
-                    loaded.Append(e);
+                    loaded.Add(e);
                 }
             }
-            catch (IOException e)
+            catch (Exception ex)
             {
-                Console.WriteLine("An error occurred while reading the file: " + e.Message);
-                return loaded;
+                throw new CorruptedDataFormatException("Error parsing line: " + " => " + ex.Message);
             }
             return loaded;
         }
 
         public void saveEmployees()
         {
-            StreamWriter streamWriter = new StreamWriter(FILE_PATH, false);
-
-            foreach (Employee e in employees)
+            using (StreamWriter streamWriter = new StreamWriter(FILE_PATH, false))
             {
-                StringBuilder sb = new StringBuilder();
-
-                if (e is FullTimeEmployee)
+                foreach (Employee e in employees)
                 {
+                    StringBuilder sb = new StringBuilder();
 
+                    if (e is FullTimeEmployee f)
+                    {
+                        sb.Append("FULL_TIME").Append(',');
+                        sb.Append(f.getId()).Append(',');
+                        sb.Append(f.getFirstName()).Append(',');
+                        sb.Append(f.getLastName()).Append(',');
+                        sb.Append(f.getDateOfBirth()).Append(',');
+                        sb.Append(f.getCurrentPosition()).Append(',');
+                        sb.Append(f.getDepartment()).Append(',');
+                        sb.Append(f.getSalary());
+                    }
+                    else if (e is PartTimeEmployee p)
+                    {
+                        sb.Append("PART_TIME").Append(',');
+                        sb.Append(p.getId()).Append(',');
+                        sb.Append(p.getFirstName()).Append(',');
+                        sb.Append(p.getLastName()).Append(',');
+                        sb.Append(p.getDateOfBirth()).Append(',');
+                        sb.Append(p.getCurrentPosition()).Append(',');
+                        sb.Append(p.getDepartment()).Append(',');
+                        sb.Append(p.getHourlyRate()).Append(',');
+                        sb.Append(p.getHoursWorked());
+                    }
+
+                    streamWriter.WriteLine(sb.ToString());
                 }
+            }
+        }
+
+        public void Run()
+        {
+            try
+            {
+                if (saveMode)
+                {
+                    saveEmployees();
+                }
+                else
+                {
+                    this.employees = loadEmployees();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("FileHandler thread error: " + e.Message);
             }
         }
     }

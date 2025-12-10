@@ -29,9 +29,9 @@ namespace EmployeeManagementCsharp.model
 
         public void setBenefits(String benefit) { benefits.Add(benefit); }
 
-        public void getPaid()
+        public override void getPaid()
         {
-            Console.Write("Full-time employee %s %s is paid a salary of %.2f%n", getFirstName(), getLastName(), salary);
+            Console.WriteLine($"Full-time employee {getFirstName()} {getLastName()} is paid a salary of {salary:F2}");
         }
     }
 }

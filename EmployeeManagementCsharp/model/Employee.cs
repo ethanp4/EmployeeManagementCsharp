@@ -97,20 +97,19 @@ namespace EmployeeManagementCsharp.model
         // Static binding: overloaded version (compile-time binding)
         public void getPaid(double bonus)
         {
-            Console.Write("%s %s received a bonus of %.2f%n", firstName, lastName, bonus);
+            Console.WriteLine($"{firstName} {lastName} received a bonus of {bonus:F2}");
         }
 
         // Dynamic binding: subclasses may override reporting behavior if needed
-        public void reportToManager()
+        virtual public void reportToManager()
         {
             if (manager != null)
             {
-                Console.Write("%s %s is reporting to manager %s %s%n", firstName, lastName,
-                        manager.getFirstName(), manager.getLastName());
+                Console.WriteLine($"{firstName} {lastName} is reporting to manager {manager.getFirstName()} {manager.getLastName()}");
             }
             else
             {
-                Console.Write("%s %s has no manager assigned.%n", firstName, lastName);
+                Console.WriteLine($"{firstName} {lastName} has no manager assigned.");
             }
         }
 
