@@ -1,11 +1,6 @@
 ﻿using EmployeeManagementCsharp.enums;
 using EmployeeManagementCsharp.exceptions;
 using EmployeeManagementCsharp.model;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 using System.Text;
 using InvalidDataException = EmployeeManagementCsharp.exceptions.InvalidDataException;
 
@@ -33,54 +28,57 @@ namespace EmployeeManagementCsharp.io
                 return loaded;
             }
 
-            try
+            using (StreamReader streamReader = new StreamReader(FILE_PATH))
             {
-                StreamReader streamReader = new StreamReader(FILE_PATH);
                 string? line;
 
                 while ((line = streamReader.ReadLine()) != null)
                 {
-                    String[] parts = line.Split(',');
-
-                    if (parts.Length < 7)
+                    try
                     {
-                        throw new CorruptedDataFormatException("Not enough fields: " + line);
+                        String[] parts = line.Split(',');
+
+                        if (parts.Length < 7)
+                        {
+                            throw new CorruptedDataFormatException("Not enough fields: " + line);
+                        }
+
+                        String type = parts[0];
+                        int id = int.Parse(parts[1]);
+                        String firstName = parts[2];
+                        String lastName = parts[3];
+                        DateOnly dob = DateOnly.Parse(parts[4]);
+                        Position position = Enum.Parse<Position>(parts[5]);
+                        Department dept = Enum.Parse<Department>(parts[6]);
+
+                        Employee e;
+
+                        switch (type)
+                        {
+                            case "FULL_TIME":
+                                double salary = Double.Parse(parts[7]);
+                                e = new FullTimeEmployee(id, firstName, lastName, dob, position, dept, null, salary);
+                                break;
+
+                            case "PART_TIME":
+                                double rate = Double.Parse(parts[7]);
+                                double hours = Double.Parse(parts[8]);
+                                e = new PartTimeEmployee(id, firstName, lastName, dob, position, dept, null, rate, hours);
+                                break;
+
+                            default:
+                                throw new InvalidDataException("Unknown employee type: " + type);
+                        }
+
+                        loaded.Add(e);
                     }
-
-                    String type = parts[0];
-                    int id = int.Parse(parts[1]);
-                    String firstName = parts[2];
-                    String lastName = parts[3];
-                    DateOnly dob = DateOnly.Parse(parts[4]);
-                    Position position = Enum.Parse<Position>(parts[5]);
-                    Department dept = Enum.Parse<Department>(parts[6]);
-
-                    Employee e;
-
-                    switch (type)
+                    catch (Exception ex)
                     {
-                        case "FULL_TIME":
-                            double salary = Double.Parse(parts[7]);
-                            e = new FullTimeEmployee(id, firstName, lastName, dob, position, dept, null, salary);
-                            break;
-
-                        case "PART_TIME":
-                            double rate = Double.Parse(parts[7]);
-                            double hours = Double.Parse(parts[8]);
-                            e = new PartTimeEmployee(id, firstName, lastName, dob, position, dept, null, rate, hours);
-                            break;
-
-                        default:
-                            throw new InvalidDataException("Unknown employee type: " + type);
+                        throw new CorruptedDataFormatException("Error parsing line: " + " => " + ex.Message);
                     }
-
-                    loaded.Add(e);
                 }
             }
-            catch (Exception ex)
-            {
-                throw new CorruptedDataFormatException("Error parsing line: " + " => " + ex.Message);
-            }
+
             return loaded;
         }
 
